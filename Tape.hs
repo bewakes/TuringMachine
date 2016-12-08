@@ -1,41 +1,22 @@
-module Tape(Cell(Cell), Tape(Tape), getCell) where
-import System.Process
-import Control.Concurrent
+module Tape(Cell(Cell), Tape(Tape)) where
+import Data.List
 
-data Cell = Cell (String, String, String)
-data Tape = Tape [Cell]
+data Cell = Cell { cell_value :: String }
+data Tape = Tape { tape_cells :: [Cell] }
 
 instance Show (Cell) where
-    show (Cell (top, middle, bottom)) = top ++ "\n" ++ middle ++ "\n" ++ bottom
+    show cell = top ++"\n"++ middle ++"\n"++ bottom
+
+        where middle    = "| " ++ cell_value cell ++ " |"
+              top       = replicate (length middle) '-'
+              bottom    = top
+
 
 instance Show (Tape) where
-    show (Tape []) = show (Tape (replicate 2 (getCell "")))
-    show (Tape (b:[])) = show (Tape (b:[getCell ""]))
-    show (Tape (Cell (t, m, b): boxes)) = top ++ "\n" ++ middle++ ". . ." ++ "\n" ++ bottom
-        where middle = m ++ ( cat $ excludingFirstOfMiddles boxes)
-              top = replicate (length middle) '-'
-              bottom = top
-              cat = foldl (++) ""
-              excludingFirstOfMiddles lst = (map (\(Cell(t,m,b)) -> tail m) lst)
+    show tape = top ++"\n"++ middle ++"\n"++ bottom
+        where middle            = "| " ++ (joinValues tape) ++ " |"
+              joinValues m      = foldl (++) "" $ barred_values $ tape_cells m
+              barred_values d   = intersperse  " | " $ map cell_value d
+              top               = replicate (length middle) '-'
+              bottom            = top
 
-
-getCell :: String -> Cell
-getCell value = Cell (t, m, b)
-    where m = "| " ++ value ++ " |"
-          t = replicate  (length m) '-'
-          b = t
-
-display = disp 10
-    where disp n 
-            | n == 0 = putStrLn ""
-            | otherwise = do
-                system "clear"
-                putStrLn $ replicate 5 '\n'
-                putStrLn $ str
-                threadDelay 800000
-                disp (n-1)
-            where str = show $ Tape $ map getCell (map show [1..n])
-{-
-main = do
-    display
--}
