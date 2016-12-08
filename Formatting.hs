@@ -29,8 +29,10 @@ display = disp 10
             | n == 0 = putStrLn ""
             | otherwise = do
                 system "clear"
-                putStrLn $ show $ Boxes $ map getBox (map show [1..n])
+                putStrLn $ replicate 5 '\n'
+                putStrLn $ str
                 threadDelay 800000
                 disp (n-1)
+            where str = show $ Boxes $ map getBox (map show [1..n])
 main = do
     display
