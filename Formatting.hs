@@ -1,4 +1,5 @@
 import System.Process
+import Control.Concurrent
 
 data Box = Box (String, String, String)
 data Boxes = Boxes [Box]
@@ -23,4 +24,13 @@ getBox value = Box (t, m, b)
           t = replicate  (length m) '-'
           b = t
 
-main = putStrLn $ show $ Boxes $ map getBox ["b","i"]
+display = disp 10
+    where disp n 
+            | n == 0 = putStrLn ""
+            | otherwise = do
+                system "clear"
+                putStrLn $ show $ Boxes $ map getBox (map show [1..n])
+                threadDelay 800000
+                disp (n-1)
+main = do
+    display
