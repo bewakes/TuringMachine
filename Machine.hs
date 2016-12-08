@@ -16,9 +16,20 @@ data Machine = Machine
     } deriving(Show)
 
 
-{-
+c = getCell "b"
+t = Tape []
+
 state = State "halt"
-m = Machine { states=[state]}
--}
+
+m = Machine { 
+    states = [state],
+    initialState = state,
+    haltingStates = [state],
+    function = [],
+    tape = t,
+    headPosition = 4,
+    alphabet = []
+}
+
 
 main = putStrLn $ show m
