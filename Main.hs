@@ -2,22 +2,48 @@ import Machine
 import Tape
 import Data.List
 import Data.Map
+import System.Process
+import Control.Concurrent
+
+displayAsCell :: Int -> [String] -> String
+displayAsCell spaces l@(x:xs) =top ++ "\n" ++ middle ++ "\n" ++ bottom
+    where middle = (replicate spaces ' ')++ "| "++ (Data.List.foldl (++) "" (intersperse " | " l)) ++ " |"
+          top = replicate (length middle) '-'
+          bottom = top
+
+renderMachine :: Machine -> IO ()
+renderMachine (Machine _ _ _ _ _ tp headPos currst) = let
+    numspaces | headPos <=5 = 20 - headPos*4
+              | otherwise = 0
+    cellElems = Prelude.map cell_value $ tape_cells tp
+    displayElems | headPos <=5 = take 15 cellElems
+                 | otherwise = take 15 $ drop (headPos-5) cellElems
+    in 
+        do
+            threadDelay 800000
+            system "clear"
+            putStrLn $ displayAsCell numspaces displayElems
+            putStrLn $ (replicate 20 ' ')++ "  ^"
+            putStrLn $ "\t\t\t " ++ ((\(State x) -> x) currst)
 
 machineIO :: Machine -> IO ()
 machineIO machine = let
     newmachine  = runMachine machine
-    currState   = currentState machine
+    currState   = currentState newmachine
+    headp       = headPosition newmachine
     index       = elemIndex currState $ haltingStates machine
     in
         if index == Nothing  then  do
-            --putStrLn $ show currState
-            putStrLn "no halt"
-            putStrLn $ show (tape newmachine)
+            renderMachine newmachine
+            --putStrLn $ (show headp) ++ (show currState)
+            --putStrLn "no halt"
+            --putStrLn $ show (tape newmachine)
             machineIO newmachine
         else do 
-            --putStrLn $ show currState
-            putStrLn "halt"
-            putStrLn $ show (tape newmachine)
+            --putStrLn $ (show headp) ++ (show currState)
+            --putStrLn "halt"
+            renderMachine newmachine
+            --putStrLn $ show (tape newmachine)
 
 ------------------------ 
 -- DATA
@@ -47,7 +73,7 @@ funclist = [
 step funclist state = Data.Map.lookup state hmap
     where hmap = fromList funclist
 
-t = Tape ((Prelude.map (Cell . show) [1,0,1,1,0,1]) ++ [Cell ""])
+t = Tape ([Cell ">"]++(Prelude.map (Cell . show) [1,0,1,1,0,1,1,0,1,0]) )
 
 
 m = Machine { 

@@ -1,9 +1,7 @@
 module Machine(Machine(..), State(..),  runMachine) where
 
 import Tape
-import System.Process
-import Control.Concurrent
-import System.IO(IO)
+import Data.Map
 
 data State = State String deriving(Show, Ord, Eq)
 
@@ -20,19 +18,13 @@ data Machine = Machine
     } deriving(Show)
 
 runMachine :: Machine -> Machine
-runMachine machine = let 
-    functionMap     = Data.Map.fromList $ function machine
-    machineTape     = tape machine
-    cellValues      = Prelude.map cell_value $ tape_cells machineTape
-    headpos         = headPosition machine
-    currState       = currentState machine
-    currStateAlpha  = (currState, cellValues !! headpos)
+runMachine (Machine sts is haltsts func a tp headpos currState) = let 
+    functionMap     = Data.Map.fromList $ func
+    cellValues      = Prelude.map cell_value $ tape_cells tp
+    currStateAlpha  | headpos >= length (tape_cells tp) = (currState, "")
+                    | otherwise = (currState, cellValues !! headpos)
     lookupResult    = Data.Map.lookup currStateAlpha functionMap
-    nextStateAlpha  | lookupResult /= Nothing = extract $ lookupResult
-                    | otherwise = (State "h0", "")
-    extract         = (\(Just x) -> x)
-    nextState       = fst nextStateAlpha
-    nextAlpha       = snd nextStateAlpha
+    (nextState, nextAlpha)= (\(Just x) -> x) $ lookupResult
     nextHeadpos     | nextAlpha == "<-" = headpos - 1
                     | nextAlpha == "->" = headpos + 1
                     | otherwise         = headpos
@@ -41,15 +33,7 @@ runMachine machine = let
                     | nextAlpha == "->" = cellValues
                     | otherwise = take headpos cellValues ++ [nextAlpha] ++ (drop (headpos+1) cellValues)
     newTape         = Tape $ Prelude.map Cell newCellValues 
-    in Machine {
-        states = states machine,
-        initialState = initialState machine,
-        haltingStates = haltingStates machine,
-        function = function machine,
-        alphabet = alphabet machine,
-        tape = newTape,
-        headPosition = nextHeadpos,
-        currentState = nextState
-    }
+
+    in Machine sts is haltsts func a newTape nextHeadpos nextState 
 
 
