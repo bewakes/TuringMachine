@@ -1,4 +1,4 @@
-module Tape(Cell(Cell), Tape(Tape)) where
+module Tape(Cell(..), Tape(..)) where
 import Data.List
 
 data Cell = Cell { cell_value :: String }

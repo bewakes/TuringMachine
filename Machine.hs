@@ -1,7 +1,9 @@
+module Machine(Machine(..), State(..),  runMachine) where
+
 import Tape
-import Data.Map
 import System.Process
 import Control.Concurrent
+import System.IO(IO)
 
 data State = State String deriving(Show, Ord, Eq)
 
@@ -17,42 +19,37 @@ data Machine = Machine
         currentState    :: State
     } deriving(Show)
 
-halt = State "h"
-q0 = State "q0"
-q1 = State "q1"
+runMachine :: Machine -> Machine
+runMachine machine = let 
+    functionMap     = Data.Map.fromList $ function machine
+    machineTape     = tape machine
+    cellValues      = Prelude.map cell_value $ tape_cells machineTape
+    headpos         = headPosition machine
+    currState       = currentState machine
+    currStateAlpha  = (currState, cellValues !! headpos)
+    lookupResult    = Data.Map.lookup currStateAlpha functionMap
+    nextStateAlpha  | lookupResult /= Nothing = extract $ lookupResult
+                    | otherwise = (State "h0", "")
+    extract         = (\(Just x) -> x)
+    nextState       = fst nextStateAlpha
+    nextAlpha       = snd nextStateAlpha
+    nextHeadpos     | nextAlpha == "<-" = headpos - 1
+                    | nextAlpha == "->" = headpos + 1
+                    | otherwise         = headpos
 
-_BLANK = ""
-_LEFT_END = ">"
-
-alpha = ["0","1", _BLANK, _LEFT_END]
-
-_states = [halt, q0, q1]
-
-funclist = [
-        ((q0, ""), (halt, "")),
-        ((q0, "0"), (q1, "1")),
-        ((q0, "1"), (q1, "0")),
-        ((q0, ">"), (q0, "->")),
-        ((q1, ""), (halt, "")),
-        ((q1, "1"), (q0, "->")),
-        ((q1, "0"), (q0, "->"))
-    ]
-
-step funclist state = Data.Map.lookup state hmap
-    where hmap = fromList funclist
-
-t = Tape (Prelude.map (Cell . show) [1,0,1,1,0,1])
-
-
-m = Machine { 
-    states = _states,
-    initialState = q0,
-    haltingStates = [halt],
-    function = funclist,
-    tape = t,
-    headPosition = 4,
-    alphabet = []
-}
+    newCellValues   | nextAlpha == "<-" = cellValues
+                    | nextAlpha == "->" = cellValues
+                    | otherwise = take headpos cellValues ++ [nextAlpha] ++ (drop (headpos+1) cellValues)
+    newTape         = Tape $ Prelude.map Cell newCellValues 
+    in Machine {
+        states = states machine,
+        initialState = initialState machine,
+        haltingStates = haltingStates machine,
+        function = function machine,
+        alphabet = alphabet machine,
+        tape = newTape,
+        headPosition = nextHeadpos,
+        currentState = nextState
+    }
 
 
-main = putStrLn $ show $ step funclist (q0, "0") 
