@@ -6,9 +6,9 @@ import System.Process
 import Control.Concurrent
 
 displayAsCell :: Int -> [String] -> String
-displayAsCell spaces l@(x:xs) =top ++ "\n" ++ middle ++ "\n" ++ bottom
-    where middle = (replicate spaces ' ')++ "| "++ (Data.List.foldl (++) "" (intersperse " | " l)) ++ " |"
-          top = replicate (length middle) '-'
+displayAsCell spaces l@(x:xs) =top ++ "\n" ++ (replicate spaces ' ') ++middle ++ "\n" ++ bottom
+    where middle = "| "++ (Data.List.foldl (++) "" (intersperse " | " l)) ++ " |" ++ " ..."
+          top = (replicate spaces ' ') ++ replicate (length middle) '-'
           bottom = top
 
 renderMachine :: Machine -> IO ()
@@ -24,7 +24,7 @@ renderMachine (Machine _ _ _ _ _ tp headPos currst) = let
             system "clear"
             putStrLn $ displayAsCell numspaces displayElems
             putStrLn $ (replicate 20 ' ')++ "  ^"
-            putStrLn $ "\t\t\t " ++ ((\(State x) -> x) currst)
+            putStrLn $ displayAsCell 19 (["STATE: "++ (\(State x) -> x) currst])
 
 machineIO :: Machine -> IO ()
 machineIO machine = let
