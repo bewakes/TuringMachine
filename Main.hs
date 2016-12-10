@@ -1,30 +1,12 @@
 import Machine
+import System.Environment
 import Tape
 import Data.List
 import Data.Map
+import Display
+import System.IO
 import System.Process
-import Control.Concurrent
-
-displayAsCell :: Int -> [String] -> String
-displayAsCell spaces l@(x:xs) =top ++ "\n" ++ (replicate spaces ' ') ++middle ++ "\n" ++ bottom
-    where middle = "| "++ (Data.List.foldl (++) "" (intersperse " | " l)) ++ " |" ++ " ..."
-          top = (replicate spaces ' ') ++ replicate (length middle) '-'
-          bottom = top
-
-renderMachine :: Machine -> IO ()
-renderMachine (Machine _ _ _ _ _ tp headPos currst) = let
-    numspaces | headPos <=5 = 20 - headPos*4
-              | otherwise = 0
-    cellElems = Prelude.map cell_value $ tape_cells tp
-    displayElems | headPos <=5 = take 15 cellElems
-                 | otherwise = take 15 $ drop (headPos-5) cellElems
-    in 
-        do
-            threadDelay 800000
-            system "clear"
-            putStrLn $ displayAsCell numspaces displayElems
-            putStrLn $ (replicate 20 ' ')++ "  ^"
-            putStrLn $ displayAsCell 19 (["STATE: "++ (\(State x) -> x) currst])
+import Control.Monad
 
 machineIO :: Machine -> IO ()
 machineIO machine = let
@@ -34,20 +16,42 @@ machineIO machine = let
     index       = elemIndex currState $ haltingStates machine
     in
         if index == Nothing  then  do
-            renderMachine newmachine
-            --putStrLn $ (show headp) ++ (show currState)
-            --putStrLn "no halt"
-            --putStrLn $ show (tape newmachine)
+            renderMachine fps newmachine 
             machineIO newmachine
         else do 
-            --putStrLn $ (show headp) ++ (show currState)
-            --putStrLn "halt"
-            renderMachine newmachine
-            --putStrLn $ show (tape newmachine)
+            renderMachine fps newmachine
+
+parseInput :: String -> Machine
+parseInput raw = Machine sts inst hsts fn a tp hp cs
+    where readlines = lines raw
+          a = drop 1 $ words $ readlines !! 0
+          sts = Data.List.map State $ drop 1 $ words $ readlines !! 1
+          inst = State $ (drop 1 $ words $ readlines !! 2) !! 0
+          hsts = Data.List.map State $ drop 1 $ words $ readlines !! 3
+          hp = 0
+          cs = inst
+          tp = Tape (Cell ">" : (Data.List.map Cell $ drop 1 $ words $ readlines !! 4))
+          funcstmts = drop 6 readlines
+          replaced = (Data.List.map words funcstmts)
+          fn =  Data.List.map getfunc replaced
+          replaceSymbols x
+            | x=="LEFT" = "<-"
+            | x=="RIGHT" = "->"
+            | x=="E" = ""
+            | otherwise = x
+          getfunc = (\l@[i,r,f,n] -> let [ii,rr,ff,nn] = Data.List.map replaceSymbols l in ((State ii, rr), (State ff, nn)))
+
+readFileContent :: String -> IO String
+readFileContent fname = do
+    handler <- openFile fname ReadMode 
+    contents <- hGetContents handler
+    return contents
+    --return $ show (parseInput contents)
 
 ------------------------ 
 -- DATA
 ------------------------
+fps = 1
 
 halt = State "h"
 q0 = State "q0"
@@ -73,7 +77,7 @@ funclist = [
 step funclist state = Data.Map.lookup state hmap
     where hmap = fromList funclist
 
-t = Tape ([Cell ">"]++(Prelude.map (Cell . show) [1,0,1,1,0,1,1,0,1,0]) )
+t = Tape ([Cell ">"]++(Prelude.map (Cell . show) [1,0]) )
 
 
 m = Machine { 
@@ -89,5 +93,9 @@ m = Machine {
 
 
 main = do
-    putStrLn $ show t
-    machineIO $ runMachine m
+    x <- getArgs
+    content <- readFileContent "machineDefinition.text"--(x!!0)
+    system "clear"
+    putStrLn $ show $ parseInput content
+    renderMachine fps $ parseInput content
+    machineIO $ runMachine $ parseInput content
