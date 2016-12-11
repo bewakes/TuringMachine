@@ -1,0 +1,20 @@
+alphabets 1 0
+states invert pre-propagate propagate shiftr moveToLSB preshift
+initial_state invert
+halt_states 
+tape 0
+function
+invert > invert RIGHT
+invert 0 moveToLSB 1
+invert 1 pre-propagate 0
+pre-propagate 0 propagate LEFT
+propagate 0 moveToLSB 1
+moveToLSB 1 moveToLSB RIGHT
+moveToLSB 0 moveToLSB RIGHT
+moveToLSB E invert LEFT
+propagate 1 pre-propagate 0
+propagate > preshift RIGHT
+preshift 0 shift 1
+shift 1 shift RIGHT
+shift 0 shift RIGHT
+shift E moveToLSB 0
