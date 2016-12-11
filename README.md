@@ -4,7 +4,7 @@ If you don't know about Turing machine, read it [here](https://en.wikipedia.org/
 
 ## Overview
 Okay, for now its very nascent and no much features. It just does what it needs to do.  
-There is a file `machineDefinition.text` a sample of which is shown below:  
+There is a file `machineDefinition.text`, which ouputs 1's complete of tape symbols(1 and 0), contents of which is shown below:  
 
     alphabets 1 0
     states q0 q1 h
@@ -37,6 +37,6 @@ NOTE: please don't leave any extra spaces(at the end of line) and new lines afte
 
 ## Usage
 If you have ghc installed (`apt-get install ghc`), compile and run by:  
-`ghc Main.hs`
-`./Main`  
+`ghc Main.hs`  
+`./Main <path to program, if not provided, defaults to machineDefinition.text>`  
 If not ghc installed (recommended to install though) I have included the linux executable `Main`. ENJOY!!
