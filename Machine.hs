@@ -32,8 +32,8 @@ runMachine (Machine sts is haltsts func a tp headpos currState) = let
     newCellValues   | nextAlpha == "<-" = cellValues
                     | nextAlpha == "->" = cellValues
                     | otherwise = take headpos cellValues ++ [nextAlpha] ++ (drop (headpos+1) cellValues)
-    newTape         = Tape $ Prelude.map Cell newCellValues 
-
+    newTape         | headpos >= length (tape_cells tp) = Tape $ Prelude.map Cell $ newCellValues ++ [""]
+                    | otherwise = Tape $ Prelude.map Cell $ newCellValues
     in Machine sts is haltsts func a newTape nextHeadpos nextState 
 
 

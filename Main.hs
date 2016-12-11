@@ -30,7 +30,8 @@ parseInput raw = Machine sts inst hsts fn a tp hp cs
           hsts = Data.List.map State $ drop 1 $ words $ readlines !! 3
           hp = 0
           cs = inst
-          tp = Tape (Cell ">" : (Data.List.map Cell $ drop 1 $ words $ readlines !! 4))
+          tapecellValues = Data.List.map replaceSymbols (drop 1 $ words $ readlines !! 4) ++ [""]
+          tp = Tape (Cell ">" : (Data.List.map Cell $ tapecellValues))
           funcstmts = drop 6 readlines
           replaced = (Data.List.map words funcstmts)
           fn =  Data.List.map getfunc replaced
@@ -92,10 +93,13 @@ m = Machine {
 }
 
 
-main = do
-    x <- getArgs
-    content <- readFileContent "machineDefinition.text"--(x!!0)
-    system "clear"
-    putStrLn $ show $ parseInput content
-    renderMachine fps $ parseInput content
-    machineIO $ runMachine $ parseInput content
+main = let
+    getFilename list = if length list ==0 then "programs/machineDefinition.text" else list !! 0
+    in
+    do
+        x <- getArgs
+        content <- readFileContent $ getFilename (x)--"programs/machineDefinition.text"--(x!!0)
+        system "clear"
+        putStrLn $ show $ parseInput content
+        renderMachine fps $ parseInput content
+        machineIO $ runMachine $ parseInput content
