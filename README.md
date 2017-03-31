@@ -1,7 +1,8 @@
 # TuringMachine
 Simulation of Turing Machine in console. Based on its formal definition. Implemented in Haskell.  
 If you don't know about Turing machine, read it [here](https://en.wikipedia.org/wiki/Turing_machine)
-## short demo
+## short demo  
+below the machine lies the defition of the machine
 ![Short demo](/out.gif)
 ## Overview
 Okay, for now its very nascent and no much features. It just does what it needs to do.  
