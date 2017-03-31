@@ -1,7 +1,8 @@
 # TuringMachine
 Simulation of Turing Machine in console. Based on its formal definition. Implemented in Haskell.  
 If you don't know about Turing machine, read it [here](https://en.wikipedia.org/wiki/Turing_machine)
-
+## short demo
+![Short demo](/out.gif)
 ## Overview
 Okay, for now its very nascent and no much features. It just does what it needs to do.  
 There is a file `machineDefinition.text`, which ouputs 1's complete of tape symbols(1 and 0), contents of which is shown below:  
